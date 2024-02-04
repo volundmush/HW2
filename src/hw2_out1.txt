@@ -1,0 +1,6 @@
+---Course schedule---
+CSE4301 MWF0900
+MTH2001 MWF1500
+COM2223 MWF1100
+---Courses with a time conflict---
+PHY1001 MWF1500
