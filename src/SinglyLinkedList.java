@@ -231,23 +231,30 @@ public class SinglyLinkedList<E> implements Cloneable {
     return false;
   }
 
+  public E removeLast() {
+    if(tail == null) return null;
+    Node<E> newtail = head;
+    Node<E> oldtail = tail;
+    while(true) {
+      Node<E> next = newtail.getNext();
+      if(next.next == null) {
+        break;
+      }
+      newtail = newtail.getNext();
+    }
+    newtail.next = null;
+    tail = newtail;
+    size -= 1;
+    return oldtail.getElement();
+  }
+
   public void remove(Node<E> node) {
     if(node == head) {
       removeFirst();
       return;
     }
     if(node == tail) {
-      Node<E> newtail = head;
-      while(true) {
-        Node<E> next = newtail.getNext();
-        if(next.next == null) {
-          break;
-        }
-        newtail = newtail.getNext();
-      }
-      newtail.next = null;
-      tail = newtail;
-      size -= 1;
+      removeLast();
       return;
     }
 

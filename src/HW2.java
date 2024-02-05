@@ -10,10 +10,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.Scanner;
-import java.util.HashSet;
-import java.util.Set;
 
 public class HW2 {
    private final Scanner data;
@@ -27,8 +24,19 @@ public class HW2 {
       }
    }
 
+   private static class Schedule {
+      public SinglyLinkedList<Entry> courses = new SinglyLinkedList<>();
+      public SinglyLinkedList<Entry> conflict = new SinglyLinkedList<>();
+
+      public SinglyLinkedList<String> slotsUsed = new SinglyLinkedList<>();
+
+      public Schedule() {
+
+      }
+   }
+
    private final SinglyLinkedList<Entry> entries = new SinglyLinkedList<>();
-   private final SinglyLinkedList<String> output = new SinglyLinkedList<>();
+   private Schedule output;
 
    public HW2(Scanner data) {
       this.data = data;
@@ -45,12 +53,45 @@ public class HW2 {
       entries.addLast(new Entry(course, slots));
    }
 
+   private Schedule recurseEntries(int depth, Schedule chain, SinglyLinkedList<Entry> remaining) {
+      if(chain == null) {
+         chain = new Schedule();
+      }
+
+      for(int i = 0; i < remaining.size(); i++) {
+            Entry current = remaining.removeFirst();
+
+            for(int j = 0; j < current.slots.size(); j++) {
+               String slot = current.slots.removeFirst();
+               if(chain.slotsUsed.contains(slot)) {
+                  // This time slot is already used.
+                  SinglyLinkedList<String> conf = new SinglyLinkedList<>();
+                  conf.addLast(slot);
+                  chain.conflict.addLast(new Entry(current.course, conf));
+               } else {
+                  // Timeslot is not used yet. Let's try it.
+                  chain.slotsUsed.addLast(slot);
+                  SinglyLinkedList<String> conf = new SinglyLinkedList<>();
+                  conf.addLast(slot);
+                  chain.courses.addLast(new Entry(current.course, conf));
+               }
+
+               current.slots.addLast(slot);
+            }
+
+            remaining.addLast(current);
+      }
+
+   }
 
    public void run() {
       // First gather up the data...
       while (data.hasNextLine()) {
          handleLine();
       }
+
+      Schedule results = recurseEntries(0, null, entries);
+
    }
 
    public static void main(final String[] args) {
