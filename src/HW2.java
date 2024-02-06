@@ -101,43 +101,43 @@ public class HW2 {
          chain = new Schedule();
       }
 
+      if(remaining.isEmpty())
+         return;
+
       ArrayList<Entry> newRemaining = new ArrayList<>(remaining);
+      Entry current = newRemaining.removeFirst();
 
-      while(!newRemaining.isEmpty()) {
-            Entry current = newRemaining.removeFirst();
-
-            for(String slot : current.slots) {
-               if(chain.slotsUsed.contains(slot)) {
-                  ArrayList<String> conf = new ArrayList<>();
-                  conf.addLast(slot);
-                  chain.conflict.addLast(new Entry(current.course, conf));
-                  if(newRemaining.isEmpty()) {
-                     compareSchedule(chain);
-                  } else {
-                     recurseEntries(chain, newRemaining);
-                  }
-                  chain.conflict.removeLast();
-               } else {
-                  // We have a working timeslot.
-                  // Timeslot is not used yet. Let's try it.
-                  chain.slotsUsed.addLast(slot);
-                  ArrayList<String> chosenSlot = new ArrayList<>();
-                  chosenSlot.addLast(slot);
-                  // Add the course...
-                  chain.courses.addLast(new Entry(current.course, chosenSlot));
-
-                  // Perform recursion...
-                  if(newRemaining.isEmpty()) {
-                     compareSchedule(chain);
-                  } else {
-                     recurseEntries(chain, newRemaining);
-                  }
-
-                  // Remove current course in order to try the next one...
-                  chain.courses.removeLast();
-                  chain.slotsUsed.removeLast();
-               }
+      for(String slot : current.slots) {
+         if(chain.slotsUsed.contains(slot)) {
+            ArrayList<String> conf = new ArrayList<>();
+            conf.addLast(slot);
+            chain.conflict.addLast(new Entry(current.course, conf));
+            if(newRemaining.isEmpty()) {
+               compareSchedule(chain);
+            } else {
+               recurseEntries(chain, newRemaining);
             }
+            chain.conflict.removeLast();
+         } else {
+            // We have a working timeslot.
+            // Timeslot is not used yet. Let's try it.
+            chain.slotsUsed.addLast(slot);
+            ArrayList<String> chosenSlot = new ArrayList<>();
+            chosenSlot.addLast(slot);
+            // Add the course...
+            chain.courses.addLast(new Entry(current.course, chosenSlot));
+
+            // Perform recursion...
+            if(newRemaining.isEmpty()) {
+               compareSchedule(chain);
+            } else {
+               recurseEntries(chain, newRemaining);
+            }
+
+            // Remove current course in order to try the next one...
+            chain.courses.removeLast();
+            chain.slotsUsed.removeLast();
+         }
       }
    }
 
