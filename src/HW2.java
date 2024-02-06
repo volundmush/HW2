@@ -10,32 +10,65 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
+import java.util.OptionalInt;
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.stream.IntStream;
 
 public class HW2 {
    private final Scanner data;
    private static class Entry {
       public String course;
-      public SinglyLinkedList<String> slots;
+      public ArrayList<String> slots;
 
-      public Entry(String course, SinglyLinkedList<String> slots) {
+      public Entry(String course, ArrayList<String> slots) {
          this.course = course;
          this.slots = slots;
       }
    }
 
-   private static class Schedule {
-      public SinglyLinkedList<Entry> courses = new SinglyLinkedList<>();
-      public SinglyLinkedList<Entry> conflict = new SinglyLinkedList<>();
+   private final ArrayList<Entry> entries = new ArrayList<>();
 
-      public SinglyLinkedList<String> slotsUsed = new SinglyLinkedList<>();
+   private static class Schedule {
+      public ArrayList<Entry> courses = new ArrayList<>();
+      public ArrayList<Entry> conflict = new ArrayList<>();
+
+      public ArrayList<String> slotsUsed = new ArrayList<>();
 
       public Schedule() {
 
       }
+
+      public int score(ArrayList<Entry> entries) {
+         // The schedule with the highest score prioritizes classes in order of listing.
+         int total = 0;
+
+         for(int i = 0; i < entries.size(); i++) {
+            int worth = entries.size() - i;
+            Entry e = entries.get(i);
+            OptionalInt result = IntStream.range(0, courses.size())
+                    .filter(x -> e.course.equals(courses.get(x).course))
+                    .findFirst();
+
+            if (result.isPresent())
+            {
+               total += worth;
+            }
+         }
+         
+         
+         return total;
+      }
+
+      public Schedule copy() {
+         Schedule out = new Schedule();
+          out.courses.addAll(courses);
+          out.conflict.addAll(conflict);
+          out.slotsUsed.addAll(slotsUsed);
+         return out;
+      }
    }
 
-   private final SinglyLinkedList<Entry> entries = new SinglyLinkedList<>();
    private Schedule output;
 
    public HW2(Scanner data) {
@@ -47,41 +80,65 @@ public class HW2 {
 
       String[] parts = line.split(" ", 2);
       String course = parts[0];
-      SinglyLinkedList<String> slots = new SinglyLinkedList<>();
+      ArrayList<String> slots = new ArrayList<>();
       for(String slot : parts[1].split(" ")) slots.addLast(slot);
 
       entries.addLast(new Entry(course, slots));
    }
 
-   private Schedule recurseEntries(int depth, Schedule chain, SinglyLinkedList<Entry> remaining) {
+   private void compareSchedule(Schedule chain) {
+      if(output == null) {
+         output = chain.copy();
+      } else {
+         if(chain.score(entries) > output.score(entries)) {
+            output = chain.copy();
+         }
+      }
+   }
+
+   private void recurseEntries(Schedule chain, ArrayList<Entry> remaining) {
       if(chain == null) {
          chain = new Schedule();
       }
 
-      for(int i = 0; i < remaining.size(); i++) {
-            Entry current = remaining.removeFirst();
+      ArrayList<Entry> newRemaining = new ArrayList<>(remaining);
 
-            for(int j = 0; j < current.slots.size(); j++) {
-               String slot = current.slots.removeFirst();
+      while(!newRemaining.isEmpty()) {
+            Entry current = newRemaining.removeFirst();
+
+            for(String slot : current.slots) {
                if(chain.slotsUsed.contains(slot)) {
-                  // This time slot is already used.
-                  SinglyLinkedList<String> conf = new SinglyLinkedList<>();
+                  ArrayList<String> conf = new ArrayList<>();
                   conf.addLast(slot);
                   chain.conflict.addLast(new Entry(current.course, conf));
+                  if(newRemaining.isEmpty()) {
+                     compareSchedule(chain);
+                  } else {
+                     recurseEntries(chain, newRemaining);
+                  }
+                  chain.conflict.removeLast();
                } else {
+                  // We have a working timeslot.
                   // Timeslot is not used yet. Let's try it.
                   chain.slotsUsed.addLast(slot);
-                  SinglyLinkedList<String> conf = new SinglyLinkedList<>();
-                  conf.addLast(slot);
-                  chain.courses.addLast(new Entry(current.course, conf));
+                  ArrayList<String> chosenSlot = new ArrayList<>();
+                  chosenSlot.addLast(slot);
+                  // Add the course...
+                  chain.courses.addLast(new Entry(current.course, chosenSlot));
+
+                  // Perform recursion...
+                  if(newRemaining.isEmpty()) {
+                     compareSchedule(chain);
+                  } else {
+                     recurseEntries(chain, newRemaining);
+                  }
+
+                  // Remove current course in order to try the next one...
+                  chain.courses.removeLast();
+                  chain.slotsUsed.removeLast();
                }
-
-               current.slots.addLast(slot);
             }
-
-            remaining.addLast(current);
       }
-
    }
 
    public void run() {
@@ -90,7 +147,22 @@ public class HW2 {
          handleLine();
       }
 
-      Schedule results = recurseEntries(0, null, entries);
+      recurseEntries(null, entries);
+
+      if(output != null) {
+         if(!output.courses.isEmpty()) {
+            System.out.println("---Course Schedule---");
+            for(Entry e : output.courses) {
+               System.out.printf("%s %s\r\n", e.course, String.join(" ", e.slots));
+            }
+         }
+         if(!output.conflict.isEmpty()) {
+            System.out.println("---Courses with a time conflict---");
+            for(Entry e : output.conflict) {
+               System.out.printf("%s %s\r\n", e.course, String.join(" ", e.slots));
+            }
+         }
+      }
 
    }
 
