@@ -24,6 +24,11 @@ public class HW2 {
          this.course = course;
          this.slots = slots;
       }
+
+      @Override
+      public String toString() {
+         return String.format("%s %s", course, String.join(" ", slots));
+      }
    }
 
    private final ArrayList<Entry> entries = new ArrayList<>();
@@ -57,6 +62,23 @@ public class HW2 {
           out.conflict.addAll(conflict);
           out.slotsUsed.addAll(slotsUsed);
          return out;
+      }
+
+      public void render() {
+         if (!courses.isEmpty()) {
+            System.out.println("---Course Schedule---");
+            for (int i = courses.size() - 1; i >= 0; i--) {
+               Entry e = courses.get(i);
+               System.out.println(e);
+            }
+         }
+         if (!conflict.isEmpty()) {
+            System.out.println("---Courses with a time conflict---");
+            for (int i = conflict.size() - 1; i >= 0; i--) {
+               Entry e = conflict.get(i);
+               System.out.println(e);
+            }
+         }
       }
    }
 
@@ -140,18 +162,7 @@ public class HW2 {
       recurseEntries(null, entries);
 
       if(output != null) {
-         if(!output.courses.isEmpty()) {
-            System.out.println("---Course Schedule---");
-            for(Entry e : output.courses) {
-               System.out.printf("%s %s\r\n", e.course, String.join(" ", e.slots));
-            }
-         }
-         if(!output.conflict.isEmpty()) {
-            System.out.println("---Courses with a time conflict---");
-            for(Entry e : output.conflict) {
-               System.out.printf("%s %s\r\n", e.course, String.join(" ", e.slots));
-            }
-         }
+         output.render();
       }
 
    }
