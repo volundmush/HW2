@@ -67,15 +67,13 @@ public class HW2 {
       public void render() {
          if (!courses.isEmpty()) {
             System.out.println("---Course Schedule---");
-            for (int i = courses.size() - 1; i >= 0; i--) {
-               Entry e = courses.get(i);
+            for (Entry e : courses) {
                System.out.println(e);
             }
          }
          if (!conflict.isEmpty()) {
             System.out.println("---Courses with a time conflict---");
-            for (int i = conflict.size() - 1; i >= 0; i--) {
-               Entry e = conflict.get(i);
+            for (Entry e : conflict) {
                System.out.println(e);
             }
          }
@@ -117,7 +115,7 @@ public class HW2 {
          return;
 
       ArrayList<Entry> newRemaining = new ArrayList<>(remaining);
-      Entry current = newRemaining.remove(newRemaining.size()-1);
+      Entry current = newRemaining.remove(0);
 
       for(String slot : current.slots) {
          if(chain.slotsUsed.contains(slot)) {
