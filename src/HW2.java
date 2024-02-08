@@ -10,6 +10,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.ArrayList;
 
@@ -70,10 +71,9 @@ public class HW2 {
 
       String[] parts = line.split(" ", 2);
       String course = parts[0];
-      ArrayList<String> slots = new ArrayList<>();
-      for(String slot : parts[1].split(" ")) slots.addLast(slot);
-      codes.addLast(course);
-      entries.addLast(new Entry(course, slots));
+      ArrayList<String> slots = new ArrayList<>(Arrays.asList(parts[1].split(" ")));
+      codes.add(course);
+      entries.add(new Entry(course, slots));
    }
 
    private void compareSchedule(Schedule chain) {
@@ -95,27 +95,27 @@ public class HW2 {
          return;
 
       ArrayList<Entry> newRemaining = new ArrayList<>(remaining);
-      Entry current = newRemaining.removeFirst();
+      Entry current = newRemaining.remove(newRemaining.size()-1);
 
       for(String slot : current.slots) {
          if(chain.slotsUsed.contains(slot)) {
             ArrayList<String> conf = new ArrayList<>();
-            conf.addLast(slot);
-            chain.conflict.addLast(new Entry(current.course, conf));
+            conf.add(slot);
+            chain.conflict.add(new Entry(current.course, conf));
             if(newRemaining.isEmpty()) {
                compareSchedule(chain);
             } else {
                recurseEntries(chain, newRemaining);
             }
-            chain.conflict.removeLast();
+            chain.conflict.remove(chain.conflict.size()-1);
          } else {
             // We have a working timeslot.
             // Timeslot is not used yet. Let's try it.
-            chain.slotsUsed.addLast(slot);
+            chain.slotsUsed.add(slot);
             ArrayList<String> chosenSlot = new ArrayList<>();
-            chosenSlot.addLast(slot);
+            chosenSlot.add(slot);
             // Add the course...
-            chain.courses.addLast(new Entry(current.course, chosenSlot));
+            chain.courses.add(new Entry(current.course, chosenSlot));
 
             // Perform recursion...
             if(newRemaining.isEmpty()) {
@@ -125,8 +125,8 @@ public class HW2 {
             }
 
             // Remove current course in order to try the next one...
-            chain.courses.removeLast();
-            chain.slotsUsed.removeLast();
+            chain.courses.remove(chain.courses.size()-1);
+            chain.slotsUsed.remove(chain.slotsUsed.size()-1);
          }
       }
    }
