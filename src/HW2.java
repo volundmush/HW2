@@ -10,10 +10,8 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
-import java.util.OptionalInt;
 import java.util.Scanner;
 import java.util.ArrayList;
-import java.util.stream.IntStream;
 
 public class HW2 {
    private final Scanner data;
@@ -28,6 +26,7 @@ public class HW2 {
    }
 
    private final ArrayList<Entry> entries = new ArrayList<>();
+   private final ArrayList<String> codes = new ArrayList<>();
 
    private static class Schedule {
       public ArrayList<Entry> courses = new ArrayList<>();
@@ -39,24 +38,15 @@ public class HW2 {
 
       }
 
-      public int score(ArrayList<Entry> entries) {
+      public int score(ArrayList<String> codes) {
          // The schedule with the highest score prioritizes classes in order of listing.
          int total = 0;
 
-         for(int i = 0; i < entries.size(); i++) {
-            int worth = entries.size() - i;
-            Entry e = entries.get(i);
-            OptionalInt result = IntStream.range(0, courses.size())
-                    .filter(x -> e.course.equals(courses.get(x).course))
-                    .findFirst();
-
-            if (result.isPresent())
-            {
-               total += worth;
-            }
+         for(Entry e : courses) {
+            int found = codes.indexOf(e.course);
+            if(found != -1) total += codes.size() - found;
          }
-         
-         
+
          return total;
       }
 
@@ -82,7 +72,7 @@ public class HW2 {
       String course = parts[0];
       ArrayList<String> slots = new ArrayList<>();
       for(String slot : parts[1].split(" ")) slots.addLast(slot);
-
+      codes.addLast(course);
       entries.addLast(new Entry(course, slots));
    }
 
@@ -90,7 +80,7 @@ public class HW2 {
       if(output == null) {
          output = chain.copy();
       } else {
-         if(chain.score(entries) > output.score(entries)) {
+         if(chain.score(codes) > output.score(codes)) {
             output = chain.copy();
          }
       }
